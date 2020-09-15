@@ -1,7 +1,9 @@
+'use strict';
+
 // global variables
 const max = 3;
 var catalogue = [];
-var view = [];
+var currView = [];
 var currRound = 0;
 const maxRounds = 25;
 
@@ -58,7 +60,7 @@ var generateItems = function(catalogue) {
     var current = -1;
     do {
         var next = Math.floor(Math.random() * catalogue.length);
-        if (current != next && last != next) {
+        if (current != next && last != next && notFromLastRound(catalogue[next])) {
             ret[count] = catalogue[next];
             count++;
             last = current;
@@ -66,6 +68,23 @@ var generateItems = function(catalogue) {
         }
     } while (count < max);
     return ret;
+}
+
+// checks to see if the image in question was from the last round
+var notFromLastRound = function(item) {
+    var bool = true;
+    if(currView.length > 0) {
+        for(var i = 0; i < currView.length; i++) {
+            if(item != currView[i]) {
+                bool = true;
+                console.log(bool);
+            } else {
+                bool = false;
+                break;
+            }
+        } 
+    }
+    return bool;
 }
 
 // gets the item image from the object and prints to the page
@@ -108,8 +127,9 @@ var displayCount = function(randItems) {
 var refresh = function(item) {
     addVote(item);
     refreshImages();
-    view = generateItems(catalogue,max);
-    printImage(view);
+    var nextView = generateItems(catalogue,max);
+    currView = nextView;
+    printImage(currView);
     refreshResults();
     printResults(catalogue);
 }
@@ -139,24 +159,13 @@ var refreshImages = function() {
     }
 }
 
-// prints results for entire catalogue after 25 rounds
-var printTotals = function() {
-    for(var i = 0; i < catalogue.length; i++) {
-        catalogue[i]= JSON.parse(localStorage.getItem(catalogue[i].name));
-        catalogue[i].total = catalogue[i].name + ' had ' +  catalogue[i].votes + ' votes and was shown ' + catalogue[i].displayed + ' times. ';
-        var para = document.createElement('p');
-        var position = document.getElementById('totals');
-        para.textContent = catalogue[i].total;
-        position.appendChild(para);
-    }
-}
-
+// var printResults
 
 // main function 
 var main = function() {
     logCatalogue(catalogue);
-    view = generateItems(catalogue, max);
-    printImage(view);
+    currView = generateItems(catalogue, max);
+    printImage(currView);
     printResults(catalogue);
 }
 
@@ -169,15 +178,88 @@ imageContainer.addEventListener('click', handler)
 
 function handler(e) {
     if(currRound < maxRounds) {
-        for(var i = 0; i < view.length; i++) {
-            if(e.target.id == view[i].name) {
+        for(var i = 0; i < currView.length; i++) {
+            if(e.target.id == currView[i].name) {
                 currRound++;
-                refresh(view[i].name);
+                refresh(currView[i].name);
             }
         }
     } else {
-        printTotals();
+        printChart();
         imageContainer.removeEventListener('click', handler);
     }
 }
+
+
+
+/* // prints results for entire catalogue after 25 rounds
+var printTotals = function() {
+    for(var i = 0; i < catalogue.length; i++) {
+        catalogue[i]= JSON.parse(localStorage.getItem(catalogue[i].name));
+        catalogue[i].total = catalogue[i].name + ' had ' +  catalogue[i].votes + ' votes and was shown ' + catalogue[i].displayed + ' times. ';
+        var para = document.createElement('p');
+        var position = document.getElementById('totals');
+        para.textContent = catalogue[i].total;
+        position.appendChild(para);
+    }
+}
+ */
+
+
+
+ // responsible for resetting catalogue to match local storage 
+ // prints out chart accordingly 
+ var printChart = function() {
+     var itemNames = [];
+     var itemVotes = [];
+     var itemDisplayed = [];
+     for(var i = 0; i < catalogue.length; i++) {
+        catalogue[i]= JSON.parse(localStorage.getItem(catalogue[i].name));
+        catalogue[i].total = catalogue[i].name + ' had ' +  catalogue[i].votes + ' votes and was shown ' + catalogue[i].displayed + ' times. ';
+        itemNames[i] = catalogue[i].name;
+        itemVotes[i] = catalogue[i].votes;
+        itemDisplayed[i] = catalogue[i].displayed;
+     }
+     var chartContents = [itemNames,itemVotes,itemDisplayed];
+     var chartColors = getColor();
+    
+     // chart.js prints chart based on catalogue 
+    var ctx = document.getElementById('fullreport').getContext('2d');
+    var mixedChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            datasets: [{
+                label: 'Votes',
+                data: chartContents[1],
+                backgroundColor: chartColors
+            }, {
+                label: 'Displayed',
+                data: chartContents[2],
+                backgroundColor: chartColors
+            }],
+            labels: chartContents[0]
+        },
+
+        options: {
+            legend: {
+                display: false,
+            },
+            title: {
+                display: true,
+                text: 'Catalogue Items: Votes vs Displayed',
+                position: 'top'
+            }
+        }
+    });
+
+ }
+
+ // generates random colors for every item, to be used in chart 
+ var getColor = function() {
+     var colors =[];
+     for(var i = 0; i < catalogue.length; i++) {
+        colors[i] = '#' + Math.floor(Math.random()*16777215).toString(16);
+     }
+    return colors;
+ }
 
