@@ -1,3 +1,10 @@
+// global variables
+const max = 3;
+var catalogue = [];
+var view = [];
+var currRound = 0;
+const maxRounds = 25;
+
 
 // object constructor for items
 var Item = function(name, img) {
@@ -5,6 +12,7 @@ var Item = function(name, img) {
     this.img = img;
     this.displayed = 0;
     this.votes = 0;
+    this.total = name + ' had ' +  this.votes + ' votes and was shown ' + this.displayed + ' times';
 }
 
 // create new object instances for every catalogue item 
@@ -22,7 +30,7 @@ var pen = new Item('Pen','images/pen.jpg');
 var petSweep = new Item('PetSweep','images/pet-sweep.jpg');
 var scissors = new Item('Scissors','images/scissors.jpg')
 var shark = new Item('Shark','images/shark.jpg');
-var sweep = new Item('Sweep','images/sweep.jpg');
+var sweep = new Item('Sweep','images/sweep.png');
 var tauntaun = new Item('TaunTaun','images/tauntaun.jpg');
 var unicorn = new Item('Unicorn','images/unicorn.jpg');
 var usb = new Item('USB','images/usb.gif');
@@ -30,7 +38,7 @@ var waterCan = new Item('Watering-Can', 'images/water-can.jpg')
 var wineGlass = new Item('Wine-Glass','images/wine-glass.jpg');
 
 // stores all item objects in an array 
-var catalogue = [bag,banana,bathroom,boots,breakfast,
+catalogue = [bag,banana,bathroom,boots,breakfast,
     bubblegum,chair,cthulhu,dogDuck,dragon,pen,
     petSweep,scissors,shark,sweep,tauntaun,unicorn,usb,waterCan,wineGlass];
 
@@ -42,17 +50,19 @@ var logCatalogue = function(catalogue) {
     }
 }
 
-// generates 3 (max) random items from catalogue    
-var generateItems = function(catalogue, max) {
+// generates max number of random items from catalogue    
+var generateItems = function(catalogue) {
     var ret = [];
     var count = 0;
-    var num = -1;
+    var last = -1;
+    var current = -1;
     do {
         var next = Math.floor(Math.random() * catalogue.length);
-        if (num != next) {
+        if (current != next && last != next) {
             ret[count] = catalogue[next];
             count++;
-            num = next;
+            last = current;
+            current = next;
         }
     } while (count < max);
     return ret;
@@ -60,21 +70,24 @@ var generateItems = function(catalogue, max) {
 
 // gets the item image from the object and prints to the page
 var printImage = function(randItems) {
-    var position = document.getElementById('images')
+    var position = document.getElementById('images');
     for(var i = 0; i < randItems.length; i++) {
         var image = document.createElement('img');
+        image.setAttribute('id',randItems[i].name)
         image.setAttribute('height','200px')
         image.setAttribute('src',randItems[i].img);
         position.appendChild(image);
     }
+    displayCount(randItems);
 }
 
 // adds the results for the images listed 
-var printResults = function(randItems) {
+var printResults = function(catalogue) {
     var position = document.getElementById('results');
-    for(var i = 0; i < randItems.length; i++) {
+    for(var i = 0; i < catalogue.length; i++) {
         var list = document.createElement('li');
-        list.textContent = randItems[i].name;
+        var getVotes = JSON.parse(localStorage.getItem(catalogue[i].name));
+        list.textContent = catalogue[i].name + ": " + getVotes.votes;
         position.appendChild(list);
     }
 }
@@ -83,24 +96,85 @@ var printResults = function(randItems) {
 var displayCount = function(randItems) {
     var local;
     for(var i = 0; i < randItems.length; i++) {
-        // get index i from local storage
         local = JSON.parse(localStorage.getItem(randItems[i].name));
-        localStorage.removeItem(randItems.name[i]);
+        localStorage.removeItem(randItems[i].name);
         local.displayed += 1;
         localStorage.setItem(local.name, JSON.stringify(local));
     }
 }
 
 
-// testing testing 
+// accounts for item image voted for
+var refresh = function(item) {
+    addVote(item);
+    refreshImages();
+    view = generateItems(catalogue,max);
+    printImage(view);
+    refreshResults();
+    printResults(catalogue);
+}
 
-logCatalogue(catalogue);
 
-var test = generateItems(catalogue,3);
+// responsible for keeping track of votes
+var addVote = function(item) {
+    var votedFor = JSON.parse(localStorage.getItem(item));
+    localStorage.removeItem(item);
+    votedFor.votes += 1;
+    localStorage.setItem(item,JSON.stringify(votedFor));
+}
 
-var img1 = document.querySelector('img:first-child');
-var img2 = document.querySelector('img:nth-child(2)');
-var img3 = document.querySelector('img:last-child');
+// removes old list to be refreshed
+var refreshResults = function() {
+    var ul = document.querySelector('ul');
+    while(ul.firstChild) {
+        ul.removeChild(ul.firstChild);
+    }
+}
 
-printImage(test);
-printResults(test);
+// removes old images to  be refreshed
+var refreshImages = function() {
+    var div = document.getElementById('images');
+    while(div.firstChild) {
+        div.removeChild(div.firstChild);
+    }
+}
+
+// prints results for entire catalogue after 25 rounds
+var printTotals = function() {
+    alert("Please check console log for results.");
+    for(var i = 0; i < catalogue.length; i++) {
+        catalogue[i]= JSON.parse(localStorage.getItem(catalogue[i].name));
+        catalogue[i].total = catalogue[i].name + ' had ' +  catalogue[i].votes + ' votes and was shown ' + catalogue[i].displayed + ' times';
+        console.log(catalogue[i].total);
+    }
+}
+
+
+// main function 
+var main = function() {
+    logCatalogue(catalogue);
+    view = generateItems(catalogue, max);
+    printImage(view);
+    printResults(catalogue);
+}
+
+main();
+
+
+// event listener
+var imageContainer = document.getElementById('images');
+imageContainer.addEventListener('click', handler)
+
+function handler(e) {
+    if(currRound < maxRounds) {
+        for(var i = 0; i < view.length; i++) {
+            if(e.target.id == view[i].name) {
+                currRound++;
+                refresh(view[i].name);
+            }
+        }
+    } else {
+        printTotals();
+    }
+}
+
