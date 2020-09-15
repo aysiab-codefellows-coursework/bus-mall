@@ -159,18 +159,7 @@ var refreshImages = function() {
     }
 }
 
-// prints results for entire catalogue after 25 rounds
-var printTotals = function() {
-    for(var i = 0; i < catalogue.length; i++) {
-        catalogue[i]= JSON.parse(localStorage.getItem(catalogue[i].name));
-        catalogue[i].total = catalogue[i].name + ' had ' +  catalogue[i].votes + ' votes and was shown ' + catalogue[i].displayed + ' times. ';
-        var para = document.createElement('p');
-        var position = document.getElementById('totals');
-        para.textContent = catalogue[i].total;
-        position.appendChild(para);
-    }
-}
-
+// var printResults
 
 // main function 
 var main = function() {
@@ -196,8 +185,58 @@ function handler(e) {
             }
         }
     } else {
-        printTotals();
+        printChart();
         imageContainer.removeEventListener('click', handler);
     }
 }
+
+
+
+/* // prints results for entire catalogue after 25 rounds
+var printTotals = function() {
+    for(var i = 0; i < catalogue.length; i++) {
+        catalogue[i]= JSON.parse(localStorage.getItem(catalogue[i].name));
+        catalogue[i].total = catalogue[i].name + ' had ' +  catalogue[i].votes + ' votes and was shown ' + catalogue[i].displayed + ' times. ';
+        var para = document.createElement('p');
+        var position = document.getElementById('totals');
+        para.textContent = catalogue[i].total;
+        position.appendChild(para);
+    }
+}
+ */
+
+ 
+
+ // printChart
+ var printChart = function() {
+     var itemNames = [];
+     var itemVotes = [];
+     var itemDisplayed = [];
+     for(var i = 0; i < catalogue.length; i++) {
+        catalogue[i]= JSON.parse(localStorage.getItem(catalogue[i].name));
+        catalogue[i].total = catalogue[i].name + ' had ' +  catalogue[i].votes + ' votes and was shown ' + catalogue[i].displayed + ' times. ';
+        itemNames[i] = catalogue[i].name;
+        itemVotes[i] = catalogue[i].votes;
+        itemDisplayed[i] = catalogue[i].displayed;
+     }
+     var chartContents = [itemNames,itemVotes,itemDisplayed];
+    
+     // chart
+    var ctx = document.getElementById('fullreport').getContext('2d');
+    var mixedChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            datasets: [{
+                label: 'Votes',
+                data: chartContents[1]
+            }, {
+                label: 'Displayed',
+                data: chartContents[2],
+            }],
+            labels: chartContents[0]
+        },
+    });
+
+ }
+
 
