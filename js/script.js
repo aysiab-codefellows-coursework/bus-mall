@@ -141,11 +141,13 @@ var refreshImages = function() {
 
 // prints results for entire catalogue after 25 rounds
 var printTotals = function() {
-    alert("Please check console log for results.");
     for(var i = 0; i < catalogue.length; i++) {
         catalogue[i]= JSON.parse(localStorage.getItem(catalogue[i].name));
-        catalogue[i].total = catalogue[i].name + ' had ' +  catalogue[i].votes + ' votes and was shown ' + catalogue[i].displayed + ' times';
-        console.log(catalogue[i].total);
+        catalogue[i].total = catalogue[i].name + ' had ' +  catalogue[i].votes + ' votes and was shown ' + catalogue[i].displayed + ' times. ';
+        var para = document.createElement('p');
+        var position = document.getElementById('totals');
+        para.textContent = catalogue[i].total;
+        position.appendChild(para);
     }
 }
 
@@ -175,6 +177,7 @@ function handler(e) {
         }
     } else {
         printTotals();
+        imageContainer.removeEventListener('click', handler);
     }
 }
 
