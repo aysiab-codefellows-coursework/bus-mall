@@ -205,9 +205,10 @@ var printTotals = function() {
 }
  */
 
- 
 
- // printChart
+
+ // responsible for resetting catalogue to match local storage 
+ // prints out chart accordingly 
  var printChart = function() {
      var itemNames = [];
      var itemVotes = [];
@@ -220,23 +221,45 @@ var printTotals = function() {
         itemDisplayed[i] = catalogue[i].displayed;
      }
      var chartContents = [itemNames,itemVotes,itemDisplayed];
+     var chartColors = getColor();
     
-     // chart
+     // chart.js prints chart based on catalogue 
     var ctx = document.getElementById('fullreport').getContext('2d');
     var mixedChart = new Chart(ctx, {
         type: 'bar',
         data: {
             datasets: [{
                 label: 'Votes',
-                data: chartContents[1]
+                data: chartContents[1],
+                backgroundColor: chartColors
             }, {
                 label: 'Displayed',
                 data: chartContents[2],
+                backgroundColor: chartColors
             }],
             labels: chartContents[0]
         },
+
+        options: {
+            legend: {
+                display: false,
+            },
+            title: {
+                display: true,
+                text: 'Catalogue Items: Votes vs Displayed',
+                position: 'top'
+            }
+        }
     });
 
  }
 
+ // generates random colors for every item, to be used in chart 
+ var getColor = function() {
+     var colors =[];
+     for(var i = 0; i < catalogue.length; i++) {
+        colors[i] = '#' + Math.floor(Math.random()*16777215).toString(16);
+     }
+    return colors;
+ }
 
