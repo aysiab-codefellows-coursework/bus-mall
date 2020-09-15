@@ -1,7 +1,9 @@
+'use strict';
+
 // global variables
 const max = 3;
 var catalogue = [];
-var view = [];
+var currView = [];
 var currRound = 0;
 const maxRounds = 25;
 
@@ -58,7 +60,7 @@ var generateItems = function(catalogue) {
     var current = -1;
     do {
         var next = Math.floor(Math.random() * catalogue.length);
-        if (current != next && last != next) {
+        if (current != next && last != next && notFromLastRound(catalogue[next])) {
             ret[count] = catalogue[next];
             count++;
             last = current;
@@ -66,6 +68,23 @@ var generateItems = function(catalogue) {
         }
     } while (count < max);
     return ret;
+}
+
+// checks to see if the image in question was from the last round
+var notFromLastRound = function(item) {
+    var bool = true;
+    if(currView.length > 0) {
+        for(var i = 0; i < currView.length; i++) {
+            if(item != currView[i]) {
+                bool = true;
+                console.log(bool);
+            } else {
+                bool = false;
+                break;
+            }
+        } 
+    }
+    return bool;
 }
 
 // gets the item image from the object and prints to the page
@@ -108,8 +127,9 @@ var displayCount = function(randItems) {
 var refresh = function(item) {
     addVote(item);
     refreshImages();
-    view = generateItems(catalogue,max);
-    printImage(view);
+    var nextView = generateItems(catalogue,max);
+    currView = nextView;
+    printImage(currView);
     refreshResults();
     printResults(catalogue);
 }
@@ -155,8 +175,8 @@ var printTotals = function() {
 // main function 
 var main = function() {
     logCatalogue(catalogue);
-    view = generateItems(catalogue, max);
-    printImage(view);
+    currView = generateItems(catalogue, max);
+    printImage(currView);
     printResults(catalogue);
 }
 
@@ -169,10 +189,10 @@ imageContainer.addEventListener('click', handler)
 
 function handler(e) {
     if(currRound < maxRounds) {
-        for(var i = 0; i < view.length; i++) {
-            if(e.target.id == view[i].name) {
+        for(var i = 0; i < currView.length; i++) {
+            if(e.target.id == currView[i].name) {
                 currRound++;
-                refresh(view[i].name);
+                refresh(currView[i].name);
             }
         }
     } else {
