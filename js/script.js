@@ -5,7 +5,7 @@ const max = 3;
 var catalogue = [];
 var currView = [];
 var currRound = 0;
-const maxRounds = 25;
+const maxRounds = 5;
 
 
 // object constructor for items
@@ -43,14 +43,6 @@ var wineGlass = new Item('Wine-Glass','images/wine-glass.jpg');
 catalogue = [bag,banana,bathroom,boots,breakfast,
     bubblegum,chair,cthulhu,dogDuck,dragon,pen,
     petSweep,scissors,shark,sweep,tauntaun,unicorn,usb,waterCan,wineGlass];
-
-
-// initializing local storage for catalogue items    
-var logCatalogue = function(catalogue) {
-    for(var i = 0; i < catalogue.length; i++) {
-        localStorage.setItem(catalogue[i].name, JSON.stringify(catalogue[i]));
-    }
-}
 
 // generates max number of random items from catalogue    
 var generateItems = function(catalogue) {
@@ -163,7 +155,6 @@ var refreshImages = function() {
 
 // main function 
 var main = function() {
-    logCatalogue(catalogue);
     currView = generateItems(catalogue, max);
     printImage(currView);
     printResults(catalogue);
@@ -189,22 +180,6 @@ function handler(e) {
         imageContainer.removeEventListener('click', handler);
     }
 }
-
-
-
-/* // prints results for entire catalogue after 25 rounds
-var printTotals = function() {
-    for(var i = 0; i < catalogue.length; i++) {
-        catalogue[i]= JSON.parse(localStorage.getItem(catalogue[i].name));
-        catalogue[i].total = catalogue[i].name + ' had ' +  catalogue[i].votes + ' votes and was shown ' + catalogue[i].displayed + ' times. ';
-        var para = document.createElement('p');
-        var position = document.getElementById('totals');
-        para.textContent = catalogue[i].total;
-        position.appendChild(para);
-    }
-}
- */
-
 
 
  // responsible for resetting catalogue to match local storage 
