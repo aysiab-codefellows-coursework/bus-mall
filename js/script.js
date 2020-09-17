@@ -44,6 +44,12 @@ catalogue = [bag,banana,bathroom,boots,breakfast,
     bubblegum,chair,cthulhu,dogDuck,dragon,pen,
     petSweep,scissors,shark,sweep,tauntaun,unicorn,usb,waterCan,wineGlass];
 
+var toLocal = function() {
+    for(var i = 0; i < catalogue.length; i++) {
+        localStorage.setItem(catalogue[i].name,JSON.stringify(catalogue[i]));
+    }
+}
+
 // generates max number of random items from catalogue    
 var generateItems = function(catalogue) {
     var ret = [];
@@ -155,6 +161,9 @@ var refreshImages = function() {
 
 // main function 
 var main = function() {
+    if(localStorage.length == 0) {
+        toLocal();
+    }
     currView = generateItems(catalogue, max);
     printImage(currView);
     printResults(catalogue);
