@@ -5,7 +5,7 @@ const max = 3;
 var catalogue = [];
 var currView = [];
 var currRound = 0;
-const maxRounds = 5;
+const maxRounds = 25;
 
 
 // object constructor for items
